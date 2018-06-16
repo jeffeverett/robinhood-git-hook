@@ -1,3 +1,4 @@
-[submodule "Robinhood"]
-	path = Robinhood
-	url = https://github.com/Jamonek/Robinhood.git
+[submodule "robinhood-python"]
+	path = robinhood-python
+	url = https://github.com/jeffeverett/robinhood-python.git
+	branch = feature/setup-script
