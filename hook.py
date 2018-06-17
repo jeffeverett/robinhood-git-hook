@@ -69,6 +69,7 @@ options_data = OrderedDict({
     'position_amounts': []
 })
 options_df = pd.DataFrame(options)
+options_per_contract = 100
 for index, row in options_df.iterrows():
     # Fetch additional instrument data
     option_id = row['option'].split('/')[-2]
@@ -85,7 +86,7 @@ for index, row in options_df.iterrows():
     option_contracts = row['quantity']
     options_data['contracts'].append(option_contracts)
     # Determine position amounts
-    position_amount = float(option_contracts)*float(option_contract_value)*1001
+    position_amount = float(option_contracts)*float(option_contract_value)*options_per_contract
     options_data['position_amounts'].append(position_amount)
 
 # Create curated data table for cryptos
