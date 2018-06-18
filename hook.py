@@ -1,7 +1,8 @@
 #!/usr/local/bin/python3
-from constants import CONFIG_FILE
+from constants import CONFIG_FILE, AUTH_FILE, HOOK_DIR
 from tabulate import tabulate
 from collections import OrderedDict
+from getpass import getpass
 from robinhood.RobinhoodClient import RobinhoodClient
 
 import pandas as pd
@@ -10,24 +11,48 @@ import sys
 import json
 import os
 
-# First, read current configurations
+# First, read user files
 config_data = {}
-if os.stat(CONFIG_FILE).st_size:
+auth_data = {}
+if os.path.exists(CONFIG_FILE) and os.stat(CONFIG_FILE).st_size != 0:
     with open(CONFIG_FILE, 'r') as config_file:
         try:
             config_data = json.load(config_file)
         except:
             sys.exit('Failed to read config file.')
+if os.path.exists(AUTH_FILE) and os.stat(AUTH_FILE).st_size != 0:
+    with open(AUTH_FILE, 'r') as auth_file:
+        try:
+            auth_data = json.load(auth_file)
+        except:
+            sys.exit('Failed to read auth file.')
 
 # Next, authenticate user
 rh = RobinhoodClient()
-if config_data['username'] and config_data['password']:
-    rh.set_auth_token_with_credentials(config_data['username'], config_data['password'])
+if 'token_type' in auth_data and 'access_token' in auth_data and \
+    'expires_at' in auth_data and 'refresh_token' in auth_data:
+    # Login from token
+    rh.set_oauth2_token(auth_data['token_type'], auth_data['access_token'],
+                        auth_data['expires_at'], auth_data['refresh_token'])
 else:
+    # Prompt user login
     username = input('Username: ')
-    password = input('Password: ')
+    password = getpass('Password: ')
     rh.set_auth_token_with_credentials(username, password)
-rh.migrate_token()
+    rh.migrate_token()
+    # Store authentication data if necessary
+    auth_header = rh._authorization_headers['Authorization']
+    auth_data = {
+        'token_type': auth_header.split(' ')[0],
+        'access_token': auth_header.split(' ')[1],
+        'expires_at': rh._oauth2_expires_at,
+        'refresh_token': rh._oauth2_refresh_token
+    }
+    if 'save_token' not in config_data or config_data['save_token'] == True:
+        if not os.path.exists(HOOK_DIR):
+            os.makedirs(HOOK_DIR)
+        with open(AUTH_FILE, 'w') as auth_file:
+            json.dump(auth_data, auth_file, default=str)
 
 # Obtain equity, options, and crypto positions
 equities = rh.get_positions()
