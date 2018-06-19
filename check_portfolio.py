@@ -3,6 +3,7 @@ from constants import CONFIG_FILE, AUTH_FILE, HOOK_DIR
 from tabulate import tabulate
 from collections import OrderedDict
 from getpass import getpass
+from datetime import datetime
 from robinhood.RobinhoodClient import RobinhoodClient
 
 import pandas as pd
@@ -10,6 +11,8 @@ import pandas as pd
 import sys
 import json
 import os
+
+DATE_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
 
 # First, read user files
 config_data = {}
@@ -29,30 +32,26 @@ if os.path.exists(AUTH_FILE) and os.stat(AUTH_FILE).st_size != 0:
 
 # Next, authenticate user
 rh = RobinhoodClient()
-if 'token_type' in auth_data and 'access_token' in auth_data and \
-    'expires_at' in auth_data and 'refresh_token' in auth_data:
+if 'token' in auth_data:
     # Login from token
-    rh.set_oauth2_token(auth_data['token_type'], auth_data['access_token'],
-                        auth_data['expires_at'], auth_data['refresh_token'])
+    rh.set_auth_token(auth_data['token'])
 else:
     # Prompt user login
     username = input('Username: ')
     password = getpass('Password: ')
     rh.set_auth_token_with_credentials(username, password)
-    rh.migrate_token()
     # Store authentication data if necessary
     auth_header = rh._authorization_headers['Authorization']
     auth_data = {
-        'token_type': auth_header.split(' ')[0],
-        'access_token': auth_header.split(' ')[1],
-        'expires_at': rh._oauth2_expires_at,
-        'refresh_token': rh._oauth2_refresh_token
+        'token': auth_header.split(' ')[1]
     }
     if 'save_token' not in config_data or config_data['save_token'] == True:
         if not os.path.exists(HOOK_DIR):
             os.makedirs(HOOK_DIR)
         with open(AUTH_FILE, 'w') as auth_file:
             json.dump(auth_data, auth_file, default=str)
+# Migrate simple token to OAuth2
+rh.migrate_token()
 
 # Obtain equity, options, and crypto positions
 equities = rh.get_positions()
