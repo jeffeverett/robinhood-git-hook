@@ -93,16 +93,22 @@ options_data = OrderedDict({
     'position_amounts': []
 })
 options_df = pd.DataFrame(options)
-options_per_contract = 100
 for index, row in options_df.iterrows():
     # Fetch additional instrument data
     option_id = row['option'].split('/')[-2]
     option_data = rh.get_options_instrument(option_id)
     option_quote = rh.get_options_marketdata(option_id)
+    option_chain = rh.get_options_chains([row['chain_id']])[0]
+    # Assume only one underlying instrument
+    option_underlying_instr = option_chain['underlying_instruments'][0]
+    option_instrument_id = option_underlying_instr['instrument'].split('/')[-2]
+    option_underlying_quote = rh.get_quote(option_instrument_id)
     # Determine symbols
     options_data['symbols'].append(option_data['chain_symbol'])
     # Determine strike price
     options_data['strike_prices'].append(option_data['strike_price'])
+    # Determine underlying price
+    options_data['underlying_prices'].append(option_underlying_quote['last_trade_price'])
     # Determine contract value
     option_contract_value = option_quote['adjusted_mark_price']
     options_data['contract_value'].append(option_contract_value)
@@ -110,7 +116,8 @@ for index, row in options_df.iterrows():
     option_contracts = row['quantity']
     options_data['contracts'].append(option_contracts)
     # Determine position amounts
-    position_amount = float(option_contracts)*float(option_contract_value)*options_per_contract
+    option_underlying_amt = option_underlying_instr['quantity']
+    position_amount = float(option_contracts)*float(option_contract_value)*option_underlying_amt
     options_data['position_amounts'].append(position_amount)
 
 # Create curated data table for cryptos
@@ -162,4 +169,4 @@ print('Crypto Positions:\n\n', tabulate(cryptos_data, headers='keys', floatfmt='
 # Print account balances
 print('Margin: {:.2f}'.format(margin_limit))
 print('Unused Margin: {:.2f}'.format(unused_margin))
-print('Portfolio Value: {:.2f}'.format(portfolio_value))
+print('Portfolio Value: {:.2f}\n'.format(portfolio_value))
