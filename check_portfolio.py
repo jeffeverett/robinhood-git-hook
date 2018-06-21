@@ -155,9 +155,9 @@ portfolio_value = total_positions + unused_margin - margin_limit
 
 
 # Print individual tables
-print('Equities\n', tabulate(equities_data, floatfmt='.2f'), '\n')
-print('Options\n', tabulate(options_data, floatfmt='.2f'), '\n')
-print('Cryptos\n', tabulate(cryptos_data, floatfmt='.2f'), '\n')
+print('Equity Positions:\n\n', tabulate(equities_data, headers='keys', floatfmt='.2f'), '\n\n')
+print('Option Positions:\n\n', tabulate(options_data, headers='keys', floatfmt='.2f'), '\n\n')
+print('Crypto Positions:\n\n', tabulate(cryptos_data, headers='keys', floatfmt='.2f'), '\n')
 
 # Print account balances
 print('Margin: {:.2f}'.format(margin_limit))
