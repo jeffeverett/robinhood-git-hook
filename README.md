@@ -53,7 +53,8 @@ Here, `post-commit` is the Git hook that we're running our script for. You can u
 # Configuration
 Configuration settings are stored in JSON format at `~/.robinhood-git-hook/config.json`. Currently, the following options
 are supported:
-- `save_token` - `true` (default) or `false`. 
+- `save_token` - `true` or `false` (default). 
   - If `true`, store OAuth2 token in local filesystem to prevent having to log back in the next time the script runs.
   - If `false`, require log in on every script run.
 
+Please be aware that storing the token is a security risk. It should not be stored for accounts of non-trivial value. If you do choose to store the token, take basic steps like encrypting your home folder and suitably managing the permissions.
