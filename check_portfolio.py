@@ -14,15 +14,20 @@ import os
 
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
 
-# First, read user files
+# First, attempt to read config file
 config_data = {}
-auth_data = {}
 if os.path.exists(CONFIG_FILE) and os.stat(CONFIG_FILE).st_size != 0:
     with open(CONFIG_FILE, 'r') as config_file:
         try:
             config_data = json.load(config_file)
         except:
             sys.exit('Failed to read config file.')
+# Delete the authorization file if we will not store the token
+if not config_data.get('save_token', True):
+    if os.path.exists(AUTH_FILE):
+        os.remove(AUTH_FILE)
+# Attempt to read authorization file
+auth_data = {}
 if os.path.exists(AUTH_FILE) and os.stat(AUTH_FILE).st_size != 0:
     with open(AUTH_FILE, 'r') as auth_file:
         try:
@@ -30,7 +35,7 @@ if os.path.exists(AUTH_FILE) and os.stat(AUTH_FILE).st_size != 0:
         except:
             sys.exit('Failed to read auth file.')
 
-# Next, authenticate user
+# Authenticate user
 rh = RobinhoodClient()
 if 'token' in auth_data:
     # Login from token
@@ -50,6 +55,7 @@ else:
             os.makedirs(HOOK_DIR)
         with open(AUTH_FILE, 'w') as auth_file:
             json.dump(auth_data, auth_file, default=str)
+
 # Migrate simple token to OAuth2
 rh.migrate_token()
 
