@@ -17,7 +17,7 @@ DATE_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
 
 # Reclaim STDIN when used in git hook
 # see https://stackoverflow.com/questions/3417896/how-do-i-prompt-the-user-from-within-a-commit-msg-hook#
-sys.stdin = open("/dev/tty", "r")
+sys.stdin = open('/dev/tty', 'r')
 
 # Attempt to read config file
 config_data = {}
