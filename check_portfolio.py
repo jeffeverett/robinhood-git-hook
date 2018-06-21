@@ -4,6 +4,7 @@ from tabulate import tabulate
 from collections import OrderedDict
 from getpass import getpass
 from datetime import datetime
+from termios import tcflush, TCIFLUSH
 from robinhood.RobinhoodClient import RobinhoodClient
 
 import pandas as pd
@@ -14,7 +15,11 @@ import os
 
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
 
-# First, attempt to read config file
+# Reclaim STDIN when used in git hook
+# see https://stackoverflow.com/questions/3417896/how-do-i-prompt-the-user-from-within-a-commit-msg-hook#
+sys.stdin = open("/dev/tty", "r")
+
+# Attempt to read config file
 config_data = {}
 if os.path.exists(CONFIG_FILE) and os.stat(CONFIG_FILE).st_size != 0:
     with open(CONFIG_FILE, 'r') as config_file:
