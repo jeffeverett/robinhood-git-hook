@@ -23,7 +23,7 @@ if os.path.exists(CONFIG_FILE) and os.stat(CONFIG_FILE).st_size != 0:
         except:
             sys.exit('Failed to read config file.')
 # Delete the authorization file if we will not store the token
-if not config_data.get('save_token', True):
+if not config_data.get('save_token', False):
     if os.path.exists(AUTH_FILE):
         os.remove(AUTH_FILE)
 # Attempt to read authorization file
@@ -50,7 +50,7 @@ else:
     auth_data = {
         'token': auth_header.split(' ')[1]
     }
-    if 'save_token' not in config_data or config_data['save_token'] == True:
+    if config_data.get('save_token', False):
         if not os.path.exists(HOOK_DIR):
             os.makedirs(HOOK_DIR)
         with open(AUTH_FILE, 'w') as auth_file:
