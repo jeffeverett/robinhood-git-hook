@@ -2,12 +2,12 @@
 from constants import CONFIG_FILE, AUTH_FILE, HOOK_DIR
 from tabulate import tabulate
 from collections import OrderedDict
-from getpass import getpass
 from datetime import datetime
 from robinhood.RobinhoodClient import RobinhoodClient
 
 import pandas as pd
 
+import utils
 import sys
 import json
 import os
@@ -43,25 +43,19 @@ if os.path.exists(AUTH_FILE) and os.stat(AUTH_FILE).st_size != 0:
             sys.exit('Failed to read auth file.')
 
 # Authenticate user
+is_logged_in = False
 rh = RobinhoodClient()
 if 'token' in auth_data:
     # Login from token
     rh.set_auth_token(auth_data['token'])
-else:
+
+    # Ensure token is valid
+    is_logged_in = utils.account.is_valid_token(rh)
+
+if not is_logged_in:
     # Prompt user login
-    username = input('Username: ')
-    password = getpass('Password: ')
-    rh.set_auth_token_with_credentials(username, password)
-    # Store authentication data if necessary
-    auth_header = rh._authorization_headers['Authorization']
-    auth_data = {
-        'token': auth_header.split(' ')[1]
-    }
-    if config_data.get('save_token', False):
-        if not os.path.exists(HOOK_DIR):
-            os.makedirs(HOOK_DIR)
-        with open(AUTH_FILE, 'w') as auth_file:
-            json.dump(auth_data, auth_file, default=str)
+    save_token = config_data.get('save_token', False)
+    utils.account.prompt_user_login(rh, save_token)
 
 # Migrate simple token to OAuth2
 rh.migrate_token()
