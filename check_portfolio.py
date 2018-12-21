@@ -50,9 +50,10 @@ if auth_data:
     rh.set_oauth2_token(
         auth_data['token_type'],
         auth_data['access_token'],
-        auth_data['expires_at'],
+        datetime.strptime(auth_data['expires_at'], "%Y-%m-%d %H:%M:%S.%f"),
         auth_data['refresh_token']
     )
+    is_logged_in = True
 
 if not is_logged_in:
     # Prompt user login

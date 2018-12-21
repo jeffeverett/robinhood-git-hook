@@ -15,7 +15,10 @@ def prompt_user_login(rh, save_token):
     # Store authentication data if necessary
     auth_header = rh._authorization_headers['Authorization']
     auth_data = {
-        'token': auth_header.split(' ')[1]
+        'token_type': auth_header.split(' ')[0],
+        'access_token': auth_header.split(' ')[1],
+        'expires_at': rh._oauth2_expires_at,
+        'refresh_token': rh._oauth2_refresh_token
     }
 
     if save_token:
