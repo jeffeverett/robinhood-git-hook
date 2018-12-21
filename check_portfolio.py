@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/usr/bin/python3
 from constants import CONFIG_FILE, AUTH_FILE, HOOK_DIR
 from tabulate import tabulate
 from collections import OrderedDict
@@ -45,20 +45,19 @@ if os.path.exists(AUTH_FILE) and os.stat(AUTH_FILE).st_size != 0:
 # Authenticate user
 is_logged_in = False
 rh = RobinhoodClient()
-if 'token' in auth_data:
+if auth_data:
     # Login from token
-    rh.set_auth_token(auth_data['token'])
-
-    # Ensure token is valid
-    is_logged_in = utils.account.is_valid_token(rh)
+    rh.set_oauth2_token(
+        auth_data['token_type'],
+        auth_data['access_token'],
+        auth_data['expires_at'],
+        auth_data['refresh_token']
+    )
 
 if not is_logged_in:
     # Prompt user login
     save_token = config_data.get('save_token', False)
     utils.account.prompt_user_login(rh, save_token)
-
-# Migrate simple token to OAuth2
-rh.migrate_token()
 
 # Obtain equity, options, and crypto positions
 equities = rh.get_positions()
@@ -162,9 +161,11 @@ for index, row in cryptos_df.iterrows():
 account_data = rh.get_account()
 margin_limit = float(account_data['margin_balances']['margin_limit'])
 unused_margin = float(account_data['margin_balances']['unallocated_margin_cash'])
-total_positions = (sum(equities_data['position_amounts']) +
-                  sum(options_data['position_amounts']) +
-                  sum(cryptos_data['position_amounts']))
+total_positions = (
+    sum(equities_data['position_amounts']) +
+    sum(options_data['position_amounts']) +
+    sum(cryptos_data['position_amounts'])
+)
 portfolio_value = total_positions + unused_margin - margin_limit
 
 

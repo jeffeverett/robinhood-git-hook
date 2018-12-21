@@ -6,16 +6,6 @@ import os
 import json
 import robinhood
 
-def is_valid_token(rh):
-    # Ensure valid token
-    is_valid = True
-    try:
-        # Request is arbitrary -- just needs to be one that requires authentication
-        rh.get_account()
-    except robinhood.exceptions.NotLoggedIn:
-        is_valid = False
-
-    return is_valid
 
 def prompt_user_login(rh, save_token):
     # Prompt user login
