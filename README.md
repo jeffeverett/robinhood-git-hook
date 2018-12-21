@@ -1,6 +1,6 @@
 # Robinhood Git Hook
 This project allows users to fetch information about their current Robinhood positions.
-Equities, options, and crytpocurrencies are supported.
+Equities, options, and cryptocurrencies are supported.
 Additionally, summary data about the user account is displayed.
 
 The motivation behind the project was to attach the script to the Git hooking system such that
