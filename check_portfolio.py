@@ -82,6 +82,8 @@ for index, row in equities_df.iterrows():
     equities_data['symbols'].append(equity_data['symbol'])
     # Determine stock prices
     equity_value = equity_quote['last_extended_hours_trade_price']
+    if not equity_value:
+        equity_value = equity_quote['last_trade_price']
     equities_data['stock_prices'].append(equity_value)
     # Determine shares owned
     equity_quantity = row['quantity']
